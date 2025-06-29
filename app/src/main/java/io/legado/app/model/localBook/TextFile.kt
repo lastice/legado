@@ -45,7 +45,15 @@ class TextFile(private var book: Book) {
         @Synchronized
         @Throws(FileNotFoundException::class)
         fun getContent(book: Book, bookChapter: BookChapter): String {
-            return getTextFile(book).getContent(bookChapter)
+            val count = (bookChapter.end!! - bookChapter.start!!).toInt()
+            val buffer = ByteArray(count)
+            LocalBook.getBookInputStream(book).use { bis ->
+                bis.skip(bookChapter.start!!)
+                bis.read(buffer)
+            }
+            return String(buffer, book.fileCharset())
+                .substringAfter(bookChapter.title)
+                .replace("^[\\n\\s]+".toRegex(), "　　")
         }
 
         fun clear() {
